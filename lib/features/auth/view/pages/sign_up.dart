@@ -51,109 +51,116 @@ class SignUpScreen extends ConsumerWidget {
                 constraints: const BoxConstraints(maxWidth: 460),
                 child: Form(
                   key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Create account',
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Create account',
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Sign up to get started',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: nameController,
-                        decoration: const InputDecoration(
-                          labelText: 'Name',
-                          prefixIcon: Icon(Icons.person_outline),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Sign up to get started',
+                          style: Theme.of(context).textTheme.bodyMedium,
                         ),
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Enter your name'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      InputTextField(
-                        controller: emailController,
-                        label: 'Email',
-                        prefixIcon: Icons.email_outlined,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Enter your email';
-                          }
-                          final emailReg = RegExp(
-                            r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}",
-                          );
-                          if (!emailReg.hasMatch(value)) {
-                            return 'Enter a valid email';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 12),
-                      InputTextField(
-                        controller: passwordController,
-                        label: 'Password',
-                        prefixIcon: Icons.lock_outline,
-                        obscureText: true,
-                        validator: (value) => value == null || value.isEmpty
-                            ? 'Enter your password'
-                            : null,
-                      ),
-                      const SizedBox(height: 12),
-                      InputTextField(
-                        controller: confirmPasswordController,
-                        label: 'Confirm Password',
-                        prefixIcon: Icons.lock_outline,
-                        obscureText: true,
-                        validator: (value) {
-                          if (value == null || value.isEmpty) {
-                            return 'Confirm your password';
-                          }
-                          if (value != passwordController.text) {
-                            return 'Passwords do not match';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 14,
-                              horizontal: 20,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                        const SizedBox(height: 16),
+                        TextFormField(
+                          controller: nameController,
+                          decoration: const InputDecoration(
+                            labelText: 'Name',
+                            prefixIcon: Icon(Icons.person_outline),
+                          ),
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Enter your name'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        InputTextField(
+                          controller: emailController,
+                          label: 'Email',
+                          prefixIcon: Icons.email_outlined,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Enter your email';
+                            }
+                            final emailReg = RegExp(
+                              r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}",
+                            );
+                            if (!emailReg.hasMatch(value)) {
+                              return 'Enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 12),
+                        InputTextField(
+                          controller: passwordController,
+                          label: 'Password',
+                          prefixIcon: Icons.lock_outline,
+                          obscureText: true,
+                          validator: (value) => value == null || value.isEmpty
+                              ? 'Enter your password'
+                              : null,
+                        ),
+                        const SizedBox(height: 12),
+                        InputTextField(
+                          controller: confirmPasswordController,
+                          label: 'Confirm Password',
+                          prefixIcon: Icons.lock_outline,
+                          obscureText: true,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Confirm your password';
+                            }
+                            if (value != passwordController.text) {
+                              return 'Passwords do not match';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 20),
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                  horizontal: 20,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              onPressed: () async {
+                                if (formKey.currentState?.validate() ?? false) {
+                                  if (passwordController.text !=
+                                      confirmPasswordController.text) {
+                                    showSnackBar(context, 'Passwords do not match');
+                                    return;
+                                  }
+                                              
+                                  await ref
+                                      .read(authViewModelProvider.notifier)
+                                      .signUpUser(
+                                        name: nameController.text,
+                                        email: emailController.text,
+                                        password: passwordController.text,
+                                      );
+                                }
+                              },
+                              child: const Text('Sign Up'),
                             ),
                           ),
-                          onPressed: () async {
-                            if (formKey.currentState?.validate() ?? false) {
-                              if (passwordController.text !=
-                                  confirmPasswordController.text) {
-                                showSnackBar(context, 'Passwords do not match');
-                                return;
-                              }
-
-                              await ref
-                                  .read(authViewModelProvider.notifier)
-                                  .signUpUser(
-                                    name: nameController.text,
-                                    email: emailController.text,
-                                    password: passwordController.text,
-                                  );
-                            }
-                          },
-                          child: const Text('Sign Up'),
                         ),
-                      ),
-                    ],
+                    
+                    SizedBox(height: 5,),
+                      ],
+                    ),
                   ),
                 ),
               ),

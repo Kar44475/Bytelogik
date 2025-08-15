@@ -2,7 +2,6 @@ import 'package:bytelogik/features/home/viewmodel/home_veiwmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
 
@@ -28,33 +27,48 @@ class HomePage extends ConsumerWidget {
                     style: Theme.of(context).textTheme.headlineMedium,
                   ),
                   const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
                         child: ElevatedButton(
                           onPressed: () =>
                               ref.read(counterProvider.notifier).state++,
-                          child: const Text('Increment',style: TextStyle(fontSize: 12),),
+                          child: const Text(
+                            'Increment',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
                         child: ElevatedButton(
                           onPressed: () =>
                               ref.read(counterProvider.notifier).state--,
-                          child: const Text('Decrement',style: TextStyle(fontSize: 12),),
+                          child: const Text(
+                            'Decrement',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ),
                       ),
-                      const SizedBox(width: 12),
-                      Expanded(
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 48,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.grey,
                           ),
                           onPressed: () =>
                               ref.read(counterProvider.notifier).state = 0,
-                          child: const Text('Reset',style: TextStyle(fontSize: 12),),
+                          child: const Text(
+                            'Reset',
+                            style: TextStyle(fontSize: 12),
+                          ),
                         ),
                       ),
                     ],

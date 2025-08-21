@@ -27,9 +27,7 @@ A Flutter project.
 - Drift automatically uses the best available implementation for each browser
 
 
-### Android native requirements
 
-- The Android native sqflite plugin may require a specific NDK version. This project sets `ndkVersion = "27.0.12077973"` in `android/app/build.gradle.kts` to satisfy native build requirements for some environments.
 
 
 

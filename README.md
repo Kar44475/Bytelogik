@@ -4,10 +4,8 @@ A Flutter project.
 
 ## Platform support
 
-- Supported: Android and iOS (mobile platforms). The code is written for mobile using `sqflite` for local persistence and does not run on web.
-- Tested: Android only (emulator/device). I don't have a macOS machine to test iOS, so iOS support is intended but unverified here.
-
-Note: For desktop (Windows/macOS/Linux) you'd need to add `sqflite_common_ffi` and initialize it in `main.dart`.
+- Supported: Android, iOS, and Web (Chrome browser). The code now uses Drift database for local persistence and works across all platforms.
+- Tested: Android and Chrome web browser. The app has been tested and works on both mobile and web platforms.
 
 ## Development environment (reported by `flutter doctor -v`)
 
@@ -18,7 +16,16 @@ Note: For desktop (Windows/macOS/Linux) you'd need to add `sqflite_common_ffi` a
 
 ## Local storage
 
-- This project uses `sqflite` (SQLite) for local persistence of user data.
+- This project now uses **Drift database** (SQLite) for local persistence of user data.
+- **Cross-platform support**: Works on Android, iOS, and Chrome web browser.
+- **Web support**: Uses IndexedDB with SQLite WASM for web browsers.
+
+## Web Browser Notes
+
+- The app may show informational messages about browser feature support
+- These are normal and don't affect functionality
+- Drift automatically uses the best available implementation for each browser
+
 
 ### Android native requirements
 

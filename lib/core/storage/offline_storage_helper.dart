@@ -1,43 +1,66 @@
-import 'dart:async';
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:drift/drift.dart';
+import 'package:drift_flutter/drift_flutter.dart';
+import 'package:flutter/foundation.dart';
+
+part 'offline_storage_helper.g.dart';
+
+class Users extends Table {
+  TextColumn get id => text()();
+  TextColumn get name => text()();
+  TextColumn get email => text()();
+  TextColumn get password => text()();
+  BoolColumn get isLoggedIn => boolean().withDefault(const Constant(false))();
+
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+@DriftDatabase(tables: [Users])
+class AppDatabase extends _$AppDatabase {
+  AppDatabase() : super(_openConnection());
+
+  @override
+  int get schemaVersion => 1;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      try {
+        await m.createAll();
+      } catch (e) {
+        debugPrint('Error creating database: $e');
+      }
+    },
+  );
+
+  static QueryExecutor _openConnection() {
+    return driftDatabase(
+      name: 'bytelogik_db',
+      web: DriftWebOptions(
+        sqlite3Wasm: Uri.parse('sqlite3.wasm'),
+        driftWorker: Uri.parse('drift_worker.js'),
+        onResult: (result) {
+          if (result.missingFeatures.isNotEmpty) {
+            debugPrint(
+              'Using ${result.chosenImplementation} due to unsupported '
+              'browser features: ${result.missingFeatures}',
+            );
+          }
+        },
+      ),
+    );
+  }
+}
 
 class OfflineStorageHelper {
   static final OfflineStorageHelper _instance =
       OfflineStorageHelper._internal();
-  static Database? _database;
-
+  factory OfflineStorageHelper() => _instance;
   OfflineStorageHelper._internal();
 
-  factory OfflineStorageHelper() => _instance;
+  static OfflineStorageHelper get instance => _instance;
 
-  Future<Database> get database async {
-    _database ??= await _initDatabase();
-    return _database!;
-  }
-
-  Future<Database> _initDatabase() async {
-    String path = join(await getDatabasesPath(), 'user_details.db');
-    return await openDatabase(
-      path,
-      version: 2,
-      onCreate: _createTables,
-   //   onUpgrade: _upgradeDatabase,
-    );
-  }
-
-  Future<void> _createTables(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE users (
-        id TEXT PRIMARY KEY,
-        name TEXT NOT NULL,
-        email TEXT NOT NULL,
-        password TEXT NOT NULL,
-        is_login INTEGER DEFAULT 0,
-        created_at INTEGER DEFAULT (strftime('%s', 'now'))
-      )
-    ''');
-  }
+  final AppDatabase _db = AppDatabase();
 
 
   Future<void> insertUser({
@@ -47,88 +70,105 @@ class OfflineStorageHelper {
     required String password,
     bool isLogin = false,
   }) async {
-    final db = await database;
-    await db.insert('users', {
-      'id': id,
-      'name': name,
-      'email': email,
-      'password': password,
-      'is_login': isLogin ? 1 : 0,
-    }, conflictAlgorithm: ConflictAlgorithm.replace);
+    await _db
+        .into(_db.users)
+        .insertOnConflictUpdate(
+          UsersCompanion.insert(
+            id: id,
+            name: name,
+            email: email,
+            password: password,
+            isLoggedIn: Value(isLogin),
+          ),
+        );
   }
-
-  /// Set login flag for the given user id (1 = logged in, 0 = logged out)
-  Future<void> setLoginStateById({
-    required String id,
-    required bool isLogin,
-  }) async {
-    final db = await database;
-    await db.update(
-      'users',
-      {'is_login': isLogin ? 1 : 0},
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
-
-  /// Clear login flag for all users (useful to ensure single active login)
-  Future<void> clearAllLoginFlags() async {
-    final db = await database;
-    await db.update('users', {'is_login': 0});
-  }
-
 
   Future<Map<String, dynamic>?> getLoggedInUser() async {
-    final db = await database;
-    final results = await db.query(
-      'users',
-      where: 'is_login = ?',
-      whereArgs: [1],
-      limit: 1,
-    );
-    if (results.isNotEmpty) return results.first;
-    return null;
+    final user = await (_db.select(
+      _db.users,
+    )..where((u) => u.isLoggedIn.equals(true))).getSingleOrNull();
+    if (user == null) return null;
+
+    return {
+      'id': user.id,
+      'name': user.name,
+      'email': user.email,
+      'password': user.password,
+      'isLogin': user.isLoggedIn,
+    };
   }
 
   Future<Map<String, dynamic>?> getUser(String id) async {
-    final db = await database;
-    final results = await db.query('users', where: 'id = ?', whereArgs: [id]);
-    if (results.isNotEmpty) {
-      return results.first;
-    }
-    return null;
-  }
+    final user = await (_db.select(
+      _db.users,
+    )..where((u) => u.id.equals(id))).getSingleOrNull();
+    if (user == null) return null;
 
-  Future<bool> userExists(String email) async {
-    final db = await database;
-    final results = await db.query(
-      'users',
-      where: 'email = ?',
-      whereArgs: [email],
-    );
-    return results.isNotEmpty;
+    return {
+      'id': user.id,
+      'name': user.name,
+      'email': user.email,
+      'password': user.password,
+      'isLogin': user.isLoggedIn,
+    };
   }
 
   Future<Map<String, dynamic>?> getUserByEmailAndPassword(
     String email,
     String password,
   ) async {
-    final db = await database;
-    final results = await db.query(
-      'users',
-      where: 'email = ? AND password = ?',
-      whereArgs: [email, password],
-    );
-    if (results.isNotEmpty) return results.first;
-    return null;
+    final user =
+        await (_db.select(_db.users)..where(
+              (u) => u.email.equals(email) & u.password.equals(password),
+            ))
+            .getSingleOrNull();
+    if (user == null) return null;
+
+    return {
+      'id': user.id,
+      'name': user.name,
+      'email': user.email,
+      'password': user.password,
+      'isLogin': user.isLoggedIn,
+    };
   }
 
+  Future<bool> userExists(String email) async {
+    final user = await (_db.select(
+      _db.users,
+    )..where((u) => u.email.equals(email))).getSingleOrNull();
+    return user != null;
+  }
+
+  Future<void> setLoginStateById({
+    required String id,
+    required bool isLogin,
+  }) async {
+    await (_db.update(_db.users)..where((u) => u.id.equals(id))).write(
+      UsersCompanion(isLoggedIn: Value(isLogin)),
+    );
+  }
+
+  Future<void> clearAllLoginFlags() async {
+    await _db
+        .update(_db.users)
+        .write(const UsersCompanion(isLoggedIn: Value(false)));
+  }
 
   Future<Map<String, dynamic>?> getAnyUser() async {
-    final db = await database;
-    final results = await db.query('users', limit: 1);
-    if (results.isNotEmpty) return results.first;
-    return null;
+    final user = await (_db.select(_db.users)..limit(1)).getSingleOrNull();
+    if (user == null) return null;
+
+    return {
+      'id': user.id,
+      'name': user.name,
+      'email': user.email,
+      'password': user.password,
+      'isLogin': user.isLoggedIn,
+    };
   }
 
+  void close() {
+    _db.close();
+  }
 }

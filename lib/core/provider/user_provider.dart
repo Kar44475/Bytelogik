@@ -1,4 +1,5 @@
 import 'package:bytelogik/core/model/user_model.dart';
+import 'package:bytelogik/core/provider/database_provider.dart';
 import 'package:bytelogik/core/storage/offline_storage_helper.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:uuid/uuid.dart';
@@ -23,12 +24,12 @@ class UserState {
 
 @Riverpod(keepAlive: true)
 class UserNotifier extends _$UserNotifier {
-  final OfflineStorageHelper _db = OfflineStorageHelper();
-
   @override
   UserState build() {
     return UserState(user: null, loading: false, error: null);
   }
+
+  OfflineStorageHelper get _db => ref.read(databaseProvider);
 
   Future<void> addUser({
     required String email,

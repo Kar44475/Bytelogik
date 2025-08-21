@@ -1,4 +1,5 @@
 import 'package:bytelogik/core/provider/user_provider.dart';
+import 'package:bytelogik/core/provider/database_provider.dart';
 import 'package:bytelogik/features/auth/view/pages/login_in.dart';
 import 'package:bytelogik/features/auth/view/pages/sign_up.dart';
 import 'package:bytelogik/features/home/view/pages/home_page.dart';
@@ -6,14 +7,14 @@ import 'package:go_router/go_router.dart';
 import 'package:bytelogik/core/navigation/keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:bytelogik/core/storage/offline_storage_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final container = ProviderContainer();
   await container.read(userNotifierProvider.notifier).loadAnyUser();
-  final loggedIn = await OfflineStorageHelper().getLoggedInUser();
+  final loggedIn = await container.read(databaseProvider).getLoggedInUser();
   final hasLoggedIn = loggedIn != null;
+  
 
   runApp(
     UncontrolledProviderScope(
@@ -49,12 +50,11 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp.router(
       title: 'Flutter Demo',
-      
+
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      routerConfig: router, 
+      routerConfig: router,
     );
   }
 }
-

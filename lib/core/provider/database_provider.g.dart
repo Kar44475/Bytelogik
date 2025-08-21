@@ -1,25 +1,27 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'user_provider.dart';
+part of 'database_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$userNotifierHash() => r'8a3921f3badb3ad73e625a22004bfa06e45588ab';
+String _$databaseHash() => r'd6dc1bd238615a31ed7e3c53bbe6a7f536608d0e';
 
-/// See also [UserNotifier].
-@ProviderFor(UserNotifier)
-final userNotifierProvider = NotifierProvider<UserNotifier, UserState>.internal(
-  UserNotifier.new,
-  name: r'userNotifierProvider',
+/// See also [database].
+@ProviderFor(database)
+final databaseProvider = Provider<OfflineStorageHelper>.internal(
+  database,
+  name: r'databaseProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$userNotifierHash,
+      : _$databaseHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
-typedef _$UserNotifier = Notifier<UserState>;
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef DatabaseRef = ProviderRef<OfflineStorageHelper>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

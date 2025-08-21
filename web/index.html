@@ -33,6 +33,26 @@
   <link rel="manifest" href="manifest.json">
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+  <!-- Load sql.js (sql-wasm) for Drift on the web. We provide a locateFile
+       hook so the wasm file is loaded from the CDN. This must be available
+       before the Flutter bootstrap script runs. -->
+  <!-- Load sql.js (sql-wasm) for Drift on the web. We load the library first,
+       then expose a wrapper on window.initSqlJs which configures locateFile
+       to load the wasm from the CDN. Finally load the Flutter bootstrap. -->
+  <script src="https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/sql-wasm.js"></script>
+  <script>
+    // initSqlJs is provided by the sql-wasm.js script above. We expose a
+    // window.initSqlJs wrapper so Drift can call it with a locateFile that
+    // points to the matching wasm on the CDN.
+    window.initSqlJs = (config = {}) => {
+      const base = 'https://cdn.jsdelivr.net/npm/sql.js@1.8.0/dist/';
+      const merged = Object.assign({
+        locateFile: (file) => base + file,
+      }, config);
+      return initSqlJs(merged);
+    };
+  </script>
+
+  <script src="flutter_bootstrap.js"></script>
 </body>
 </html>
